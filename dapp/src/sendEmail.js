@@ -1,85 +1,92 @@
 const { promises: fs } = require('fs');
 const {
-  IExecDataProtectorDeserializer,
+    IExecDataProtectorDeserializer,
 } = require('@iexec/dataprotector-deserializer');
-const sendEmail = require('./emailService');
-const validateInputs = require('./validateInputs');
-const {
-  downloadEncryptedContent,
-  decryptContent,
-} = require('./decryptEmailContent');
+
+//TODO: Rename file to r3v3al.js
 
 async function writeTaskOutput(path, message) {
-  try {
-    await fs.writeFile(path, message);
-    console.log(`File successfully written at path: ${path}`);
-  } catch {
-    console.error(`Failed to write Task Output`);
-    process.exit(1);
-  }
+    try {
+        await fs.writeFile(path, message);
+        console.log(`File successfully written at path: ${path}`);
+    } catch {
+        console.error(`Failed to write Task Output`);
+        process.exit(1);
+    }
 }
 
 async function start() {
-  // Parse the developer secret environment variable
-  let developerSecret;
-  try {
-    developerSecret = JSON.parse(process.env.IEXEC_APP_DEVELOPER_SECRET);
-  } catch {
-    throw Error('Failed to parse the developer secret');
-  }
-  let requesterSecret;
-  try {
-    requesterSecret = process.env.IEXEC_REQUESTER_SECRET_1
-      ? JSON.parse(process.env.IEXEC_REQUESTER_SECRET_1)
-      : {};
-  } catch {
-    throw Error('Failed to parse requester secret');
-  }
+    // Parse the developer secret environment variable
+    let developerSecret;
+    try {
+        developerSecret = JSON.parse(process.env.IEXEC_APP_DEVELOPER_SECRET);
+    } catch {
+        throw Error('Failed to parse the developer secret');
+    }
+    let requesterSecret;
+    try {
+        requesterSecret = process.env.IEXEC_REQUESTER_SECRET_1
+            ? JSON.parse(process.env.IEXEC_REQUESTER_SECRET_1)
+            : {};
+    } catch {
+        throw Error('Failed to parse requester secret');
+    }
 
-  const deserializer = new IExecDataProtectorDeserializer();
-  const email = await deserializer.getValue('email', 'string');
+    const inputArgs = process.argv.split(' ');
+    console.log(inputArgs);
 
-  const unsafeEnvVars = {
-    iexecOut: process.env.IEXEC_OUT,
-    mailJetApiKeyPublic: developerSecret.MJ_APIKEY_PUBLIC,
-    mailJetApiKeyPrivate: developerSecret.MJ_APIKEY_PRIVATE,
-    mailJetSender: developerSecret.MJ_SENDER,
-    emailSubject: requesterSecret.emailSubject,
-    emailContentMultiAddr: requesterSecret.emailContentMultiAddr,
-    contentType: requesterSecret.contentType,
-    senderName: requesterSecret.senderName,
-    emailContentEncryptionKey: requesterSecret.emailContentEncryptionKey,
-  };
-  const envVars = validateInputs(unsafeEnvVars);
-  const encryptedEmailContent = await downloadEncryptedContent(
-    envVars.emailContentMultiAddr
-  );
-  const emailContent = decryptContent(
-    encryptedEmailContent,
-    envVars.emailContentEncryptionKey
-  );
+    const deserializer = new IExecDataProtectorDeserializer();
+    // Only support 2 treasures for now
+    const xTreasure1 = await deserializer.getValue('x1', 'int');
+    const yTreasure1 = await deserializer.getValue('y1', 'int');
+    const xTreasure2 = await deserializer.getValue('x2', 'int');
+    const yTreasure2 = await deserializer.getValue('y2', 'int');
 
-  const response = await sendEmail({
-    email,
-    mailJetApiKeyPublic: envVars.mailJetApiKeyPublic,
-    mailJetApiKeyPrivate: envVars.mailJetApiKeyPrivate,
-    emailSubject: envVars.emailSubject,
-    emailContent,
-    mailJetSender: envVars.mailJetSender,
-    contentType: envVars.contentType,
-    senderName: envVars.senderName,
-  });
+    const creatorHalfRewardKeySeed = developerSecret;
+    const playerHalfRewardKeySeed = requesterSecret;
 
-  await writeTaskOutput(
-    `${envVars.iexecOut}/result.txt`,
-    JSON.stringify(response, null, 2)
-  );
-  await writeTaskOutput(
-    `${envVars.iexecOut}/computed.json`,
-    JSON.stringify({
-      'deterministic-output-path': `${envVars.iexecOut}/result.txt`,
-    })
-  );
+    let privateKey = "0x" + creatorHalfRewardKeySeed + playerHalfRewardKeySeed;
+    let rewardKeyWallet = new ethers.Wallet(privateKey);
+
+    switch (inputArgs[0]) {
+        case "countReward":
+            let count = 0
+            if (xTreasure1 > 0 & yTreasure1 > 0) {
+                count++
+            }
+            if (xTreasure2 > 0 & yTreasure2 > 0) {
+                count++
+            }
+            response = count;
+            break;
+        case "generateRewardKey":
+            response = rewardKeyWallet.address
+            break;
+        case "claimReward":
+            const x = inputArgs[1]
+            const y = inputArgs[2]
+            if (xTreasure1 == x & yTreasure1 == y || xTreasure2 == x & yTreasure2 == y) {
+                // TODO: Load r3v3alContract and trigger reward method
+                const tx = await rewardKeyWallet.sendTransaction({
+                    to: "0xr3v3alContract"
+                });
+                response = "Treasure found! Payment already made with tx:%{tx}"
+            }
+            break;
+        default:
+            break
+    }
+
+    await writeTaskOutput(
+        `${envVars.iexecOut}/result.txt`,
+        JSON.stringify(response, null, 2)
+    );
+    await writeTaskOutput(
+        `${envVars.iexecOut}/computed.json`,
+        JSON.stringify({
+            'deterministic-output-path': `${envVars.iexecOut}/result.txt`,
+        })
+    );
 }
 
 module.exports = start;
