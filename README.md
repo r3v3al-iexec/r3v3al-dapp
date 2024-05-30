@@ -2,67 +2,11 @@
   <a href="https://iex.ec/" rel="noopener" target="_blank"><img width="150" src="./logo-iexec.png" alt="iExec logo"/></a>
 </p>
 
-<h1 align="center">Web3mail</h1>
+<h1 align="center">R3v3al Dapp</h1>
 
-**Web3mail** offers developers methods to create apps that:
-
-- enable an entity (such as a (d)app provider or an end-user) to email an Ethereum account holder without knowing her/his email address
-- eliminate the need for end-users to share their email address with multiple third-parties, reducing the risk of data breaches and spam.
-
-Web3mail is composed of 2 methods:
-
-- **fetchMyContacts** — that enables an entity to retrieve a list of Ethereum accounts whose owners have authorized the entity to email them
-- **sendEmail** — that allows an entity to email a user (previously fetched via the fetchMyContacts method) knowing only her/his Ethereum account.
-
-<div align="center">
-
-[![npm](https://img.shields.io/npm/v/@iexec/web3mail)](https://www.npmjs.com/package/@iexec/web3mail)[![license](https://img.shields.io/badge/license-Apache%202-blue)](/LICENSE)
-
-</div>
-
-## Installation
-
-Web3mail is available as an [npm package](https://www.npmjs.com/package/@iexec/web3mail).
-
-**npm:**
-
-```sh
-npm install @iexec/web3mail
-```
-
-**yarn:**
-
-```sh
-yarn add @iexec/web3mail
-```
-
-## Get started
-
-### Browser
-
-```ts
-import { IExecWeb3mail } from "@iexec/web3mail";
-
-const web3Provider = window.ethereum;
-const web3mail = new IExecWeb3mail(web3Provider);
-```
-
-### NodeJS
-
-```ts
-import { IExecWeb3mail, getWeb3Provider } from "@iexec/web3mail";
-
-const { PRIVATE_KEY } = process.env; 
-
-const web3Provider = getWeb3Provider(PRIVATE_KEY);
-const web3mail = new IExecWeb3mail(web3Provider);
-```
-
-## Documentation
-
-- [Web3mail documentation](https://tools.docs.iex.ec/tools/web3mail)
-- [Web3mail technical design](./technical-design/index.md)
-- [iExec Protocol documentation](https://protocol.docs.iex.ec)
+Project detail can be found at:
+- https://excalidraw.com/#room=fccd6428eeae8c2777ba,rYoC6hiCpFSobiX7nPS4wA
+- https://www.notion.so/r3v3al-ab1fe00c791449008e18f39a4ca956a8
 
 ## License
 
