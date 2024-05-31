@@ -46,12 +46,7 @@ async function start() {
     const dataprotectorDeserializer = new IExecDataProtectorDeserializer();
 
     // Deserialize each value using the getValue function
-    const minX = await dataprotectorDeserializer.getValue('minX', 'f64');
-    const minY = await dataprotectorDeserializer.getValue('minY', 'f64');
-    const maxX = await dataprotectorDeserializer.getValue('maxX', 'f64');
-    const maxY = await dataprotectorDeserializer.getValue('maxY', 'f64');
     const rewardCount = await dataprotectorDeserializer.getValue('rewardCount', 'f64');
-    const rewardAmount = await dataprotectorDeserializer.getValue('rewardAmount', 'f64');
 
     // Deserialize rewards array
     const rewards = [];
