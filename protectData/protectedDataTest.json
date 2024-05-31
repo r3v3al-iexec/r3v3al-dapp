@@ -1,0 +1,9 @@
+{
+  "minX": 100,
+  "minY": 800,
+  "maxX": 200,
+  "maxY": 900,
+  "rewardCount": 2,
+  "rewardAmount": 6.84,
+  "rewards": "[ { 'x': 135, 'y': 807, 'reward': 3.48, 'boosted': false }, { 'x': 125, 'y': 817, 'reward': 3.36, 'boosted': false } ]"
+}

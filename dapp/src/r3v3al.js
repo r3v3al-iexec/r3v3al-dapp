@@ -104,9 +104,9 @@ async function start() {
             response = rewardKeyWallet.address
             break;
         case "claimReward":
-            const provider = new ethers.providers.JsonRpcProvider('https://bellecour.iex.ec'); // Replace with your Infura project ID
-            const wallet = new ethers.Wallet(rewardKeyWallet.privateKey, provider); // Replace with your private key
-            const contractAddress = "0x3092c6B927d19B98967913756153Ea86B65774dC"; // Replace with your contract address
+            const provider = new ethers.providers.JsonRpcProvider('https://bellecour.iex.ec');
+            const wallet = new ethers.Wallet(rewardKeyWallet.privateKey, provider); 
+            const contractAddress = "0x3092c6B927d19B98967913756153Ea86B65774dC";
             const abi = [
 '{ "inputs": [ { "internalType": "bytes32", "name": "datasetId", "type": "bytes32" }, { "internalType": "address", "name": "player", "type": "address" }, { "components": [ { "internalType": "uint32", "name": "x", "type": "uint32" }, { "internalType": "uint32", "name": "y", "type": "uint32" } ], "internalType": "struct R3v3alfunds.Point", "name": "winningCoordinates", "type": "tuple" }, { "internalType": "uint256", "name": "rewardedAmount", "type": "uint256" } ], "name": "distributeReward", "outputs": [], "stateMutability": "nonpayable", "type": "function" }'
               ];
