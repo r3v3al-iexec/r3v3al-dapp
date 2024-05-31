@@ -55,14 +55,17 @@ async function start() {
 
     // Deserialize rewards array
     const rewards = [];
-    for (const reward of dataprotectorDeserializer.getValue('rewards', 'Uint8Array')) {
-        const x = await dataprotectorDeserializer.getValue('rewards.x', 'f64');
-        const y = await dataprotectorDeserializer.getValue('rewards.y', 'f64');
-        const rewardValue = await dataprotectorDeserializer.getValue('rewards.reward', 'f64');
-        const boosted = await dataprotectorDeserializer.getValue('rewards.boosted', 'bool');
+    const  dataprotectorRewards = dataprotectorDeserializer.getValue('rewards', 'Uint8Array');
+    for (let i = 0; i < dataprotectorRewards.length; i++) {
+        const pathPrefix = `rewards.${i}.`;
+      
+        const x = await dataprotectorDeserializer.getValue(`${pathPrefix}x`, 'f64');
+        const y = await dataprotectorDeserializer.getValue(`${pathPrefix}y`, 'f64');
+        const rewardValue = await dataprotectorDeserializer.getValue(`${pathPrefix}reward`, 'f64');
+        const boosted = await dataprotectorDeserializer.getValue(`${pathPrefix}boosted`, 'bool');
+      
         rewards.push({ x, y, reward: rewardValue, boosted });
-    }
-
+      }
 
     // Convert private keys to BigIntegers
     const privateKey1BigInt = BigInt('0x' + developerSecret);
@@ -73,7 +76,6 @@ async function start() {
 
     // Create an Ethereum wallet from the combined private key
     const rewardKeyWallet = new ethers.Wallet('0x' + combinedPrivateKey);
-    console.log('Address:', rewardKeyWallet.address);
 
     switch (inputArgs[0]) {
         case "countReward":
@@ -90,7 +92,7 @@ async function start() {
 '{ "inputs": [ { "internalType": "bytes32", "name": "datasetId", "type": "bytes32" }, { "internalType": "address", "name": "player", "type": "address" }, { "components": [ { "internalType": "uint32", "name": "x", "type": "uint32" }, { "internalType": "uint32", "name": "y", "type": "uint32" } ], "internalType": "struct R3v3alfunds.Point", "name": "winningCoordinates", "type": "tuple" }, { "internalType": "uint256", "name": "rewardedAmount", "type": "uint256" } ], "name": "distributeReward", "outputs": [], "stateMutability": "nonpayable", "type": "function" }'
               ];
             const contract = new ethers.Contract(contractAddress, abi, wallet);
-            const player = inputArgs[1]; // Replace with the actual player address
+            const player = inputArgs[1];
             const x = inputArgs[2]
             const y = inputArgs[3]
             const datasetId = inputArgs[4]
