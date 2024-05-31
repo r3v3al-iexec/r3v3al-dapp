@@ -16,15 +16,26 @@ async function writeTaskOutput(path, message) {
     }
 }
 
+function parseRewardsString(rewardsString) {
+    // Replace single quotes with double quotes
+    const jsonString = rewardsString.replace(/'/g, '"');
+    // Parse the JSON string
+    const rewardsArray = JSON.parse(jsonString);
+  
+    return rewardsArray;
+  }
+
 async function start() {
     // Parse the developer secret environment variable
     let developerSecret;
+    // MOCKED 
     try {
         developerSecret = JSON.parse(process.env.IEXEC_APP_DEVELOPER_SECRET);
     } catch {
         throw Error('Failed to parse the developer secret');
     }
     let requesterSecret;
+    // MOCKED 
     try {
         requesterSecret = process.env.IEXEC_REQUESTER_SECRET_1
             ? JSON.parse(process.env.IEXEC_REQUESTER_SECRET_1)
@@ -32,45 +43,61 @@ async function start() {
     } catch {
         throw Error('Failed to parse requester secret');
     }
+    // //  MOCKING PART
+    // // FOR TESTING PURPOSE
+    // developerSecret = JSON.parse('{"MC_PVK":"0xbf92d248bb64f851a0afacb6b7c2fdf271e3e5e32788d12294110ff1ff6c2277"}' )
+    // requesterSecret = JSON.parse('{"MC_PVK":"0x9751ba995669f09f31278bcb3e9eff9e4235935e16d217e3924d0c4910a76e83"}' )
 
     const unsafeEnvVars = {
         iexecOut: process.env.IEXEC_OUT,
         firstHalfPrivateKey: developerSecret.MC_PVK,
-        secondHalfPrivateKey: developerSecret.PLAYER_PVK
+        secondHalfPrivateKey: requesterSecret.PLAYER_PVK
     };
     const envVars = validateInputs(unsafeEnvVars)
 
-    const inputArgs = process.argv.split(' ');
-    console.log(inputArgs);
+    const inputArgs = process.argv.slice(2);
 
+
+    // USED IN CASE OF SCONIFICATION
     const dataprotectorDeserializer = new IExecDataProtectorDeserializer();
 
     // Deserialize each value using the getValue function
     const rewardCount = await dataprotectorDeserializer.getValue('rewardCount', 'f64');
 
     // Deserialize rewards array
-    const rewards = [];
-    const  dataprotectorRewards = dataprotectorDeserializer.getValue('rewards', 'Uint8Array');
-    for (let i = 0; i < dataprotectorRewards.length; i++) {
-        const pathPrefix = `rewards.${i}.`;
-      
-        const x = await dataprotectorDeserializer.getValue(`${pathPrefix}x`, 'f64');
-        const y = await dataprotectorDeserializer.getValue(`${pathPrefix}y`, 'f64');
-        const rewardValue = await dataprotectorDeserializer.getValue(`${pathPrefix}reward`, 'f64');
-        const boosted = await dataprotectorDeserializer.getValue(`${pathPrefix}boosted`, 'bool');
-      
-        rewards.push({ x, y, reward: rewardValue, boosted });
-      }
+    // const rewards = [];
+    const  dataprotectorRewards = await dataprotectorDeserializer.getValue('rewards', 'string');
+    const rewards = parseRewardsString(dataprotectorRewards);
+    // // FOR TESTING PURPOSE
+    // let jsonData;
+    // try {
+    //     const data = await fs.readFile('./protectedDataTest.json', 'utf8');
+    //     jsonData = JSON.parse(data);
+    // } catch (err) {
+    //     console.error('Error reading or parsing the JSON file', err);
+    //     process.exit(1);
+    // }
+    // // Use the JSON data
+    // const { rewardCount, rewards } = jsonData;
 
     // Convert private keys to BigIntegers
-    const privateKey1BigInt = BigInt('0x' + developerSecret);
-    const privateKey2BigInt = BigInt('0x' + requesterSecret);
+    const privateKey1BigInt = BigInt(envVars.firstHalfPrivateKey);
+    const privateKey2BigInt = BigInt(envVars.secondHalfPrivateKey);
 
     // Combine private keys (for example, using addition)
-    const combinedPrivateKey = (privateKey1BigInt + privateKey2BigInt).toString(16);
+    let combinedPrivateKey = (privateKey1BigInt + privateKey2BigInt).toString(16);
 
-    // Create an Ethereum wallet from the combined private key
-    const rewardKeyWallet = new ethers.Wallet('0x' + combinedPrivateKey);
+    // Ensure the combined private key has an even length
+    if (combinedPrivateKey.length % 2 !== 0) {
+        combinedPrivateKey = '0' + combinedPrivateKey;
+    }
+
+    // / Calculate the Keccak-256 hash of the combined private key
+    const hash = ethers.utils.keccak256('0x' + combinedPrivateKey);
+    const rewardKeyWallet = new ethers.Wallet(hash);
+
+    console.log(rewardKeyWallet);   
+    var response;
 
     switch (inputArgs[0]) {
         case "countReward":
@@ -106,6 +133,7 @@ async function start() {
             }
             break;
         default:
+            response = "NO ACTION UPDATE"
             break
     }
 
