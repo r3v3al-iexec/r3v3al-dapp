@@ -28,25 +28,25 @@ function parseRewardsString(rewardsString) {
 async function start() {
     // Parse the developer secret environment variable
     let developerSecret;
-    // MOCKED 
-    try {
-        developerSecret = JSON.parse(process.env.IEXEC_APP_DEVELOPER_SECRET);
-    } catch {
-        throw Error('Failed to parse the developer secret');
-    }
+    // // MOCKED 
+    // try {
+    //     developerSecret = JSON.parse(process.env.IEXEC_APP_DEVELOPER_SECRET);
+    // } catch {
+    //     throw Error('Failed to parse the developer secret');
+    // }
     let requesterSecret;
-    // MOCKED 
-    try {
-        requesterSecret = process.env.IEXEC_REQUESTER_SECRET_1
-            ? JSON.parse(process.env.IEXEC_REQUESTER_SECRET_1)
-            : {};
-    } catch {
-        throw Error('Failed to parse requester secret');
-    }
+    // // MOCKED 
+    // try {
+    //     requesterSecret = process.env.IEXEC_REQUESTER_SECRET_1
+    //         ? JSON.parse(process.env.IEXEC_REQUESTER_SECRET_1)
+    //         : {};
+    // } catch {
+    //     throw Error('Failed to parse requester secret');
+    // }
     // //  MOCKING PART
     // // FOR TESTING PURPOSE
-    // developerSecret = JSON.parse('{"MC_PVK":"0xbf92d248bb64f851a0afacb6b7c2fdf271e3e5e32788d12294110ff1ff6c2277"}' )
-    // requesterSecret = JSON.parse('{"MC_PVK":"0x9751ba995669f09f31278bcb3e9eff9e4235935e16d217e3924d0c4910a76e83"}' )
+    developerSecret = JSON.parse('{"MC_PVK":"0xbf92d248bb64f851a0afacb6b7c2fdf271e3e5e32788d12294110ff1ff6c2277"}' )
+    requesterSecret = JSON.parse('{"PLAYER_PVK":"0x9751ba995669f09f31278bcb3e9eff9e4235935e16d217e3924d0c4910a76e83"}' )
 
     const unsafeEnvVars = {
         iexecOut: process.env.IEXEC_OUT,
@@ -59,26 +59,23 @@ async function start() {
 
 
     // USED IN CASE OF SCONIFICATION
-    const dataprotectorDeserializer = new IExecDataProtectorDeserializer();
-
-    // Deserialize each value using the getValue function
-    const rewardCount = await dataprotectorDeserializer.getValue('rewardCount', 'f64');
-
-    // Deserialize rewards array
-    // const rewards = [];
-    const  dataprotectorRewards = await dataprotectorDeserializer.getValue('rewards', 'string');
-    const rewards = parseRewardsString(dataprotectorRewards);
-    // // FOR TESTING PURPOSE
-    // let jsonData;
-    // try {
-    //     const data = await fs.readFile('./protectedDataTest.json', 'utf8');
-    //     jsonData = JSON.parse(data);
-    // } catch (err) {
-    //     console.error('Error reading or parsing the JSON file', err);
-    //     process.exit(1);
-    // }
-    // // Use the JSON data
-    // const { rewardCount, rewards } = jsonData;
+    // const dataprotectorDeserializer = new IExecDataProtectorDeserializer();
+    // // Deserialize each value using the getValue function
+    // const rewardCount = await dataprotectorDeserializer.getValue('rewardCount', 'f64');
+    // // Deserialize rewards array
+    // const  dataprotectorRewards = await dataprotectorDeserializer.getValue('rewards', 'string');
+    // const rewards = parseRewardsString(dataprotectorRewards);
+    // FOR TESTING PURPOSE
+    let jsonData;
+    try {
+        const data = await fs.readFile('./protectedDataTest.json', 'utf8');
+        jsonData = JSON.parse(data);
+    } catch (err) {
+        console.error('Error reading or parsing the JSON file', err);
+        process.exit(1);
+    }
+    // Use the JSON data
+    const { rewardCount, rewards } = jsonData;
 
     // Convert private keys to BigIntegers
     const privateKey1BigInt = BigInt(envVars.firstHalfPrivateKey);
